@@ -4,7 +4,7 @@
   "note": "Complete public scientific-checker bank. Inactive unless SCIBENCH_TRIGGER_LOG is set.",
   "checkers": [
     {
-      "alarm": "`|F(a,b)-F(b,a)| > tol`, or `F` outside `[-tol, 1+tol]`, or `|F(UaU\u2020,UbU\u2020)-F| > tol` (`tol = C*eps_d*d^2`; probe `U` is a permutation matrix, an exact transform, X)",
+      "alarm": "`|F(a,b)-F(b,a)| > tol`, or `F` outside `[-tol, 1+tol]`, or `|F(UaU\u2020,UbU\u2020)-F| > tol` (`tol = C*eps_d*d^2` when either state is a `Statevector`, `C*sqrt(eps_d)*d` when both are `DensityMatrix` (sqrt route); probe `U` is a permutation matrix, an exact transform, X). Pre also requires `|tr-1| <= 1e-9` and `lambda_min >= -eps_d*d`",
       "family": "fidelity_symmetry_invariance",
       "id": "QK-STM-001",
       "invariant": "`F(a,b) = F(b,a)`, `0 <= F <= 1`, and `F(UaU\u2020, UbU\u2020) = F(a,b)` for a unitary `U`",
@@ -28,7 +28,7 @@
       "symbol": "state_fidelity"
     },
     {
-      "alarm": "`S < -tol` or `S > log_base d + tol`, or `|S(P\u03c1P^T) - S(\u03c1)| > tol` for a permutation `P`, or `S > tol` when `purity >= 1 - eps_d*d`. `tol = C*eps_d*d*log d`",
+      "alarm": "`S < -tol` or `S > log_base d + tol`, or `|S(P\u03c1P^T) - S(\u03c1)| > tol` for a permutation `P`, or `S > tol` when `purity >= 1 - eps_d*d`. `tol = C*eps_d*d^2*40/ln(base)` (eigenvalue error `eps_d*d` enters as `p log(1/p)`); the purity gate uses the same tol; Pre also requires `|tr-1| <= 1e-9` and `lambda_min >= -eps_d*d`",
       "family": "entropy_bounds_invariance",
       "id": "QK-STM-003",
       "invariant": "`0 <= S <= log_base d`; `S(U\u03c1U\u2020) = S(\u03c1)`; `S = 0` iff pure",
@@ -79,7 +79,7 @@
       "alarm": "`|N - N_schmidt| > C*eps_d*d^2` or `N < -tol`",
       "family": "negativity_schmidt_consistency",
       "id": "QK-STM-007",
-      "invariant": "`N = ((sum_i lambda_i)^2 - 1)/2` with `lambda_i` the Schmidt coefficients (singular values of the reshaped amplitude matrix), and `N >= 0`",
+      "invariant": "`N = ((sum_i lambda_i)^2 - 1)/2` with `lambda_i` the Schmidt coefficients (singular values of the raw amplitude matrix reshaped as `qargs` vs the rest, little-endian), and `N >= 0`",
       "observation_point": "return of `negativity`",
       "precondition": "valid pure bipartite `Statevector`, partial transpose over one subsystem",
       "rationale": "independent path to the same entanglement monotone.",
