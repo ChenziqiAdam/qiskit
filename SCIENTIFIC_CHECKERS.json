@@ -400,12 +400,12 @@
       "symbol": "ProductFormula.synthesize"
     },
     {
-      "alarm": "difference `> C*eps_d*d*size(out)` (approximation degree 1.0 only)",
+      "alarm": "the phase-aligned amplitude difference exceeds `tol = 1e-7*(1+size(out)/100) + 8*sqrt(1e-9)*n_blocks`, `n_blocks` the number of multi-qubit instructions of the input (each resynthesised block is a Weyl decomposition specialised within the library's default infidelity)",
       "family": "transpile_equivalence",
       "id": "QK-TRN-001",
-      "invariant": "`Operator(out)` equals `Operator(in)` after undoing the final layout permutation, up to global phase",
-      "observation_point": "return of `transpile` / `PassManager.run`",
-      "precondition": "circuit of `<= 6` qubits, unitary gates, any optimization level, any coupling map",
+      "invariant": "the output prepares, from `|0...0>`, the same state as the input up to a global phase, after undoing the layout permutation; when the call states `qubits_initially_zero=False`, the full unitary is preserved up to global phase",
+      "observation_point": "return of `transpile`",
+      "precondition": "circuit of `<= 6` qubits, unitary gates, any optimization level, any coupling map, no ancilla added (`out.num_qubits = in.num_qubits`), `approximation_degree = 1.0`",
       "rationale": "the semantic-preservation law of the whole compiler stack.",
       "scientific_quantity": "compiled circuit unitary",
       "source": "qiskit/compiler/transpiler.py",

@@ -667,6 +667,12 @@ for _rep in ("Choi", "SuperOp", "Kraus", "Chi", "PTM", "Stinespring", "Operator"
 check_to_choi_cptp = _adapt_to(check_transform_cptp, "Choi")
 
 
+def _subsystem_call(a):
+    """True if a ``compose`` call acts on a subsystem: explicit ``qargs``, or the ``.qargs``
+    attribute that ``op([0, 2])`` attaches to its result and ``compose`` then picks up."""
+    return a.get("qargs") is not None or getattr(a.get("other"), "qargs", None) is not None
+
+
 def _channel_square(obj):
     s = _super_data(obj)
     d = int(round(np.sqrt(s.shape[0])))
@@ -676,8 +682,8 @@ def _channel_square(obj):
 @_guarded
 def check_channel_compose(res, a):
     """QK-CHN-003 (compose)."""
-    me, other, qargs, front = a["self"], a["other"], a["qargs"], a["front"]
-    if qargs is not None:
+    me, other, front = a["self"], a["other"], a["front"]
+    if _subsystem_call(a):
         return
     s_a, d = _channel_square(me)
     s_b, d_b = _channel_square(other)
@@ -904,7 +910,7 @@ def check_operator_algebra(res, a, kind="compose"):
     x = np.asarray(me.data)
     y = _operator_data(other)
     if kind == "compose":
-        if a["qargs"] is not None:
+        if _subsystem_call(a):
             return
         expected = x @ y if a["front"] else y @ x
     elif kind == "tensor":
@@ -987,10 +993,8 @@ def check_clifford_unitary_compose(res, a):
     """QK-CLF-002 (compose)."""
     from qiskit.quantum_info import Operator
 
-    me, other, qargs, front = a["self"], a["other"], a["qargs"], a["front"]
-    if me.num_qubits > 6 or (qargs is not None and getattr(other, "qargs", None) is None and qargs):
-        return
-    if qargs is not None:
+    me, other, front = a["self"], a["other"], a["front"]
+    if me.num_qubits > 6 or _subsystem_call(a):
         return
     x = np.asarray(me.to_operator().data)
     y = _operator_data(other)
@@ -1007,7 +1011,7 @@ def check_clifford_unitary_compose(res, a):
 def check_pauli_compose(res, a):
     """QK-PAU-001 (compose)."""
     me, other = a["self"], a["other"]
-    if a["inplace"] or a["qargs"] is not None or me.num_qubits > 6:
+    if a["inplace"] or _subsystem_call(a) or me.num_qubits > 6:
         return
     x, y = me.to_matrix(), other.to_matrix()
     expected = x @ y if a["front"] else y @ x
@@ -1020,7 +1024,7 @@ def check_pauli_commutes(res, a):
     from qiskit.quantum_info import Pauli
 
     me, other = a["self"], a["other"]
-    if a["qargs"] is not None or not isinstance(other, Pauli) or me.num_qubits > 6:
+    if _subsystem_call(a) or not isinstance(other, Pauli) or me.num_qubits > 6:
         return
     x, y = me.to_matrix(), other.to_matrix()
     expected = bool(np.allclose(x @ y, y @ x, atol=1e-12))
@@ -1051,7 +1055,7 @@ def check_spo_compose(res, a):
     from qiskit.quantum_info import SparsePauliOp
 
     me, other = a["self"], a["other"]
-    if a["qargs"] is not None or not isinstance(other, SparsePauliOp):
+    if _subsystem_call(a) or not isinstance(other, SparsePauliOp):
         return
     if me.num_qubits > 6 or me.size * other.size > 400:
         return
@@ -1260,8 +1264,14 @@ def check_product_formula(res, a):
 
     from qiskit.quantum_info import SparsePauliOp
 
+    from qiskit.synthesis.evolution import SuzukiTrotter
+
     me, evo = a["self"], a["evolution"]
     op, t = evo.operator, evo.time
+    # precondition: a deterministic Trotter-Suzuki formula with the default Pauli rotation
+    # (QDrift samples terms at random; a user-supplied atomic evolution need not be exp(-i theta P))
+    if not isinstance(me, SuzukiTrotter) or getattr(me, "_atomic_evolution", None) is not None:
+        return
     if not isinstance(op, SparsePauliOp) or isinstance(t, bool):
         return
     try:
@@ -1301,7 +1311,7 @@ def check_product_formula(res, a):
 def check_transpile(res, a):
     """QK-TRN-001."""
     from qiskit.circuit import QuantumCircuit
-    from qiskit.quantum_info import Operator
+    from qiskit.quantum_info import Operator, Statevector
 
     if a["approximation_degree"] not in (None, 1.0) or a["unitary_synthesis_method"] != "default":
         return
@@ -1317,13 +1327,18 @@ def check_transpile(res, a):
         if inp.num_qubits > 6 or out.num_qubits != inp.num_qubits:
             continue
         try:
-            u_in = Operator(inp).data
-            u_out = Operator.from_circuit(out).data
+            n_blocks = max(1, sum(1 for i in inp.data if len(i.qubits) >= 2))
+            # each re-synthesised two-qubit block is a Weyl decomposition specialised within the
+            # library's default infidelity (_WEYL_FID): an operator error of ~2*sqrt(1.25*_WEYL_FID)
+            tol = _SYN_TOL * (1 + out.size() / 100.0) + 8 * float(np.sqrt(_WEYL_FID)) * n_blocks
+            # always: the compiled circuit prepares the same state from |0...0> (up to phase)
+            v_in = Statevector.from_circuit(inp).data.reshape(-1, 1)
+            v_out = Statevector.from_circuit(out).data.reshape(-1, 1)
+            bad = bad or _phase_error(v_in, v_out) > tol
+            # the full unitary only if the input is not promised to be zero-initialised
+            # (high-level synthesis may otherwise use idle qubits as clean ancillas)
+            if a["qubits_initially_zero"] is False:
+                bad = bad or _phase_error(Operator(inp).data, Operator.from_circuit(out).data) > tol
         except Exception:  # pylint: disable=broad-exception-caught
             continue
-        # each re-synthesised two-qubit block is a Weyl decomposition specialised within the
-        # library's default infidelity (_WEYL_FID), i.e. an operator error of ~2*sqrt(1.25*_WEYL_FID)
-        n_blocks = max(1, sum(1 for i in inp.data if len(i.qubits) >= 2))
-        tol = _SYN_TOL * (1 + out.size() / 100.0) + 8 * float(np.sqrt(_WEYL_FID)) * n_blocks
-        bad = bad or _phase_error(u_in, u_out) > tol
     trigger_if(bad, "QK-TRN-001")
