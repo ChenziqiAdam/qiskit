@@ -1004,7 +1004,10 @@ def check_clifford_unitary_from_circuit(res, a):
     u = _operator_data(qc)
     v = np.asarray(res.to_operator().data)
     d = u.shape[0]
-    tol = _C * _EPS * d * (1 + getattr(qc, "size", lambda: 1)())
+    # a float angle that is only approximately a multiple of pi/2 is snapped by the library:
+    # the unitary built from the raw angle differs by ~|angle|*eps
+    ang = sum(abs(float(x)) for i in getattr(qc, "data", []) for x in i.operation.params if isinstance(x, (int, float)))
+    tol = _C * _EPS * d * (1 + getattr(qc, "size", lambda: 1)() + ang)
     trigger_if(_phase_error(u, v) > tol, "QK-CLF-002")
     del Operator
 
