@@ -180,7 +180,14 @@ def _usable(state, max_dim=_MAX_DIM):
         return False
     if _norm_defect(state) > 1e-9:
         return False
-    return bool(state.is_valid())
+    if not state.is_valid():
+        return False
+    Statevector, _ = _states()
+    if not isinstance(state, Statevector) and state.dim <= _MAX_DIM:
+        # is_valid() admits eigenvalues down to ~-1e-8; the laws assume PSD to rounding
+        if np.linalg.eigvalsh(state.data).min() < -_EPS * state.dim:
+            return False
+    return True
 
 
 def _matrix(state):
