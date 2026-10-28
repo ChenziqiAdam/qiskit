@@ -14,6 +14,8 @@
 
 from __future__ import annotations
 
+from qiskit import _scientific_checkers as _sc
+
 import warnings
 import itertools
 from collections.abc import Callable, Sequence
@@ -126,6 +128,7 @@ class ProductFormula(EvolutionSynthesis):
             f"automatically enable the call to {self.__class__}.synthesize."
         )
 
+    @_sc.observe(_sc.check_product_formula)
     def synthesize(self, evolution: PauliEvolutionGate) -> QuantumCircuit:
         """Synthesize a :class:`.PauliEvolutionGate`.
 

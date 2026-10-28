@@ -16,6 +16,8 @@ Transformations between QuantumChannel representations.
 """
 
 from __future__ import annotations
+
+from qiskit import _scientific_checkers as _sc
 import math
 import numpy as np
 
@@ -45,6 +47,7 @@ def _transform_rep(input_rep, output_rep, data, input_dim, output_dim):
     raise QiskitError(f"Invalid QuantumChannel {output_rep}")
 
 
+@_sc.observe(_sc.check_to_choi_cptp, _sc.check_to_choi_action)
 def _to_choi(rep, data, input_dim, output_dim):
     """Transform a QuantumChannel to the Choi representation."""
     if rep == "Choi":
@@ -65,6 +68,7 @@ def _to_choi(rep, data, input_dim, output_dim):
     raise QiskitError(f"Invalid QuantumChannel {rep}")
 
 
+@_sc.observe(_sc.check_to_superop_action)
 def _to_superop(rep, data, input_dim, output_dim):
     """Transform a QuantumChannel to the SuperOp representation."""
     if rep == "SuperOp":
@@ -85,6 +89,7 @@ def _to_superop(rep, data, input_dim, output_dim):
     raise QiskitError(f"Invalid QuantumChannel {rep}")
 
 
+@_sc.observe(_sc.check_to_kraus_action)
 def _to_kraus(rep, data, input_dim, output_dim):
     """Transform a QuantumChannel to the Kraus representation."""
     if rep == "Kraus":
@@ -99,6 +104,7 @@ def _to_kraus(rep, data, input_dim, output_dim):
     return _choi_to_kraus(data, input_dim, output_dim)
 
 
+@_sc.observe(_sc.check_to_chi_action)
 def _to_chi(rep, data, input_dim, output_dim):
     """Transform a QuantumChannel to the Chi representation."""
     if rep == "Chi":
@@ -113,6 +119,7 @@ def _to_chi(rep, data, input_dim, output_dim):
     return _choi_to_chi(data, input_dim)
 
 
+@_sc.observe(_sc.check_to_ptm_action)
 def _to_ptm(rep, data, input_dim, output_dim):
     """Transform a QuantumChannel to the PTM representation."""
     if rep == "PTM":
@@ -127,6 +134,7 @@ def _to_ptm(rep, data, input_dim, output_dim):
     return _superop_to_ptm(data, input_dim)
 
 
+@_sc.observe(_sc.check_to_stinespring_action)
 def _to_stinespring(rep, data, input_dim, output_dim):
     """Transform a QuantumChannel to the Stinespring representation."""
     if rep == "Stinespring":
@@ -139,6 +147,7 @@ def _to_stinespring(rep, data, input_dim, output_dim):
     return _kraus_to_stinespring(data, input_dim, output_dim)
 
 
+@_sc.observe(_sc.check_to_operator_action)
 def _to_operator(rep, data, input_dim, output_dim):
     """Transform a QuantumChannel to the Operator representation."""
     if rep == "Operator":

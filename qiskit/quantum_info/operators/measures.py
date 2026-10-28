@@ -15,6 +15,8 @@ A collection of useful quantum information functions for operators.
 """
 
 from __future__ import annotations
+
+from qiskit import _scientific_checkers as _sc
 import logging
 import numpy as np
 
@@ -31,6 +33,7 @@ from qiskit.utils import optionals as _optionals
 logger = logging.getLogger(__name__)
 
 
+@_sc.observe(_sc.check_process_fidelity_routes, _sc.check_process_fidelity_invariance)
 def process_fidelity(
     channel: Operator | QuantumChannel,
     target: Operator | QuantumChannel | None = None,
@@ -204,6 +207,7 @@ def average_gate_fidelity(
     return (dim * f_pro + 1) / (dim + 1)
 
 
+@_sc.observe(_sc.check_gate_error)
 def gate_error(
     channel: QuantumChannel,
     target: Operator | None = None,

@@ -16,6 +16,8 @@ Methods to create random operators.
 
 from __future__ import annotations
 
+from qiskit import _scientific_checkers as _sc
+
 import numpy as np
 from numpy.random import default_rng
 
@@ -38,6 +40,7 @@ __all__ = [
 DEFAULT_RNG = default_rng()
 
 
+@_sc.observe(_sc.check_random_unitary)
 def random_unitary(dims: int | tuple, seed: int | np.random.Generator | None = None):
     """Return a random unitary Operator.
 
@@ -65,6 +68,7 @@ def random_unitary(dims: int | tuple, seed: int | np.random.Generator | None = N
     return Operator(mat, input_dims=dims, output_dims=dims)
 
 
+@_sc.observe(_sc.check_random_hermitian)
 def random_hermitian(
     dims: int | tuple, traceless: bool = False, seed: int | np.random.Generator | None = None
 ):
@@ -111,6 +115,7 @@ def random_hermitian(
     return Operator(mat, input_dims=dims, output_dims=dims)
 
 
+@_sc.observe(_sc.check_random_channel)
 def random_quantum_channel(
     input_dims: int | tuple | None = None,
     output_dims: int | tuple | None = None,

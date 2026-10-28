@@ -14,6 +14,8 @@
 Statevector quantum state class.
 """
 from __future__ import annotations
+
+from qiskit import _scientific_checkers as _sc
 import copy as _copy
 import math
 import re
@@ -458,6 +460,7 @@ class Statevector(QuantumState, TolerancesMixin):
         ret._data = other * self.data
         return ret
 
+    @_sc.observe(_sc.check_evolve_unitary, _sc.check_evolve_circuit)
     def evolve(
         self, other: Operator | QuantumCircuit | Instruction, qargs: list[int] | None = None
     ) -> Statevector:
@@ -585,6 +588,7 @@ class Statevector(QuantumState, TolerancesMixin):
             self.data, self.num_qubits, z_mask, x_mask, y_phase, x_max
         )
 
+    @_sc.observe(_sc.check_expectation_value)
     def expectation_value(
         self, oper: BaseOperator | QuantumCircuit | Instruction, qargs: None | list[int] = None
     ) -> complex:
@@ -610,6 +614,7 @@ class Statevector(QuantumState, TolerancesMixin):
         conj = self.conjugate()
         return np.dot(conj.data, val.data)
 
+    @_sc.observe(_sc.check_probabilities)
     def probabilities(
         self, qargs: None | list[int] = None, decimals: None | int = None
     ) -> np.ndarray:

@@ -15,6 +15,8 @@ Random symplectic operator functions
 
 from __future__ import annotations
 
+from qiskit import _scientific_checkers as _sc
+
 import numpy as np
 from numpy.random import default_rng
 
@@ -86,6 +88,7 @@ def random_pauli_list(
     return PauliList.from_symplectic(z, x)
 
 
+@_sc.observe(_sc.check_clifford_symplectic)
 def random_clifford(num_qubits: int, seed: int | np.random.Generator | None = None) -> Clifford:
     """Return a random Clifford operator.
 

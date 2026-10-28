@@ -14,6 +14,8 @@
 Decompose a single-qubit unitary via Euler angles.
 """
 from __future__ import annotations
+
+from qiskit import _scientific_checkers as _sc
 from typing import TYPE_CHECKING
 import numpy as np
 
@@ -173,6 +175,7 @@ class OneQubitEulerDecomposer:
             dag.apply_operation_back(gate, (qr[0],), check=False)
         return dag
 
+    @_sc.observe(_sc.check_one_qubit_synthesis)
     def __call__(
         self,
         unitary: Operator | Gate | np.ndarray,

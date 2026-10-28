@@ -15,6 +15,8 @@ Kraus representation of a Quantum Channel.
 """
 
 from __future__ import annotations
+
+from qiskit import _scientific_checkers as _sc
 import copy
 import math
 from numbers import Number
@@ -223,6 +225,7 @@ class Kraus(QuantumChannel):
         ret._data = (kraus_l, kraus_r)
         return ret
 
+    @_sc.observe(_sc.check_channel_compose)
     def compose(self, other: Kraus, qargs: list | None = None, front: bool = False) -> Kraus:
         if qargs is None:
             qargs = getattr(other, "qargs", None)
@@ -255,11 +258,13 @@ class Kraus(QuantumChannel):
         ret._op_shape = new_shape
         return ret
 
+    @_sc.observe(_sc.check_channel_tensor)
     def tensor(self, other: Kraus) -> Kraus:
         if not isinstance(other, Kraus):
             other = Kraus(other)
         return self._tensor(self, other)
 
+    @_sc.observe(_sc.check_channel_expand)
     def expand(self, other: Kraus) -> Kraus:
         if not isinstance(other, Kraus):
             other = Kraus(other)

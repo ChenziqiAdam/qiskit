@@ -16,6 +16,8 @@ Choi-matrix representation of a Quantum Channel.
 """
 
 from __future__ import annotations
+
+from qiskit import _scientific_checkers as _sc
 import copy as _copy
 import math
 from typing import TYPE_CHECKING
@@ -166,6 +168,7 @@ class Choi(QuantumChannel):
         ret._data = np.reshape(data, (d_in * d_out, d_in * d_out))
         return ret
 
+    @_sc.observe(_sc.check_channel_compose)
     def compose(self, other: Choi, qargs: list | None = None, front: bool = False) -> Choi:
         if qargs is None:
             qargs = getattr(other, "qargs", None)
@@ -193,11 +196,13 @@ class Choi(QuantumChannel):
         ret._op_shape = new_shape
         return ret
 
+    @_sc.observe(_sc.check_channel_tensor)
     def tensor(self, other: Choi) -> Choi:
         if not isinstance(other, Choi):
             other = Choi(other)
         return self._tensor(self, other)
 
+    @_sc.observe(_sc.check_channel_expand)
     def expand(self, other: Choi) -> Choi:
         if not isinstance(other, Choi):
             other = Choi(other)

@@ -16,6 +16,8 @@ Matrix Operator class.
 
 from __future__ import annotations
 
+from qiskit import _scientific_checkers as _sc
+
 import cmath
 import copy as _copy
 import re
@@ -379,6 +381,7 @@ class Operator(LinearOp):
         return new_op
 
     @classmethod
+    @_sc.observe(_sc.check_circuit_operator)
     def from_circuit(
         cls,
         circuit: QuantumCircuit,
@@ -491,6 +494,7 @@ class Operator(LinearOp):
         ret._op_shape = self._op_shape.transpose()
         return ret
 
+    @_sc.observe(_sc.check_operator_compose)
     def compose(self, other: Operator, qargs: list | None = None, front: bool = False) -> Operator:
         if qargs is None:
             qargs = getattr(other, "qargs", None)
@@ -616,11 +620,13 @@ class Operator(LinearOp):
 
         return ret
 
+    @_sc.observe(_sc.check_operator_tensor)
     def tensor(self, other: Operator) -> Operator:
         if not isinstance(other, Operator):
             other = Operator(other)
         return self._tensor(self, other)
 
+    @_sc.observe(_sc.check_operator_expand)
     def expand(self, other: Operator) -> Operator:
         if not isinstance(other, Operator):
             other = Operator(other)

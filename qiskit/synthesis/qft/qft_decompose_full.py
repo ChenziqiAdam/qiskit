@@ -14,12 +14,15 @@ Circuit synthesis for a QFT circuit.
 """
 
 from __future__ import annotations
+
+from qiskit import _scientific_checkers as _sc
 import warnings
 import numpy as np
 from qiskit.circuit import QuantumCircuit
 from qiskit._accelerate.synthesis.qft import synth_qft_full as _synth_qft_full
 
 
+@_sc.observe(_sc.check_qft)
 def synth_qft_full(
     num_qubits: int,
     do_swaps: bool = True,

@@ -14,6 +14,7 @@ Circuit synthesis for 2-qubit and 3-qubit Cliffords based on Bravyi & Maslov
 decomposition.
 """
 
+from qiskit import _scientific_checkers as _sc
 from qiskit.circuit import QuantumCircuit
 from qiskit.quantum_info import Clifford
 
@@ -22,6 +23,7 @@ from qiskit._accelerate.synthesis.clifford import (
 )
 
 
+@_sc.observe(_sc.check_clifford_synthesis)
 def synth_clifford_bm(clifford: Clifford) -> QuantumCircuit:
     """Optimal CX-cost decomposition of a :class:`.Clifford` operator on 2 qubits
     or 3 qubits into a :class:`.QuantumCircuit` based on the Bravyi-Maslov method [1].

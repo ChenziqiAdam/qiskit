@@ -14,6 +14,8 @@ Clifford operator class.
 """
 from __future__ import annotations
 
+from qiskit import _scientific_checkers as _sc
+
 import functools
 import itertools
 import math
@@ -383,17 +385,20 @@ class Clifford(BaseOperator, AdjointMixin, Operation):
     def conjugate(self):
         return Clifford._conjugate_transpose(self, "C")
 
+    @_sc.observe(_sc.check_clifford_symplectic)
     def adjoint(self):
         return Clifford._conjugate_transpose(self, "A")
 
     def transpose(self):
         return Clifford._conjugate_transpose(self, "T")
 
+    @_sc.observe(_sc.check_clifford_symplectic)
     def tensor(self, other: Clifford) -> Clifford:
         if not isinstance(other, Clifford):
             other = Clifford(other)
         return self._tensor(self, other)
 
+    @_sc.observe(_sc.check_clifford_symplectic)
     def expand(self, other: Clifford) -> Clifford:
         if not isinstance(other, Clifford):
             other = Clifford(other)
@@ -418,6 +423,7 @@ class Clifford(BaseOperator, AdjointMixin, Operation):
         clifford.phase[n + b.num_qubits :] = a.stab_phase
         return clifford
 
+    @_sc.observe(_sc.check_clifford_symplectic, _sc.check_clifford_unitary_compose)
     def compose(
         self,
         other: Clifford | QuantumCircuit | Instruction,
@@ -677,6 +683,7 @@ class Clifford(BaseOperator, AdjointMixin, Operation):
         return self.to_circuit().to_gate()
 
     @staticmethod
+    @_sc.observe(_sc.check_clifford_symplectic, _sc.check_clifford_unitary_from_circuit)
     def from_circuit(circuit: QuantumCircuit | Instruction) -> Clifford:
         """Initialize from a QuantumCircuit or Instruction.
 

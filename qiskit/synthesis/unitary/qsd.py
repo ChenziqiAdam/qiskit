@@ -15,6 +15,8 @@ Quantum Shannon Decomposition.
 Method is described in arXiv:quant-ph/0406176.
 """
 from __future__ import annotations
+
+from qiskit import _scientific_checkers as _sc
 import warnings
 from collections.abc import Callable
 import scipy
@@ -50,6 +52,7 @@ _EPS = 1e-10
     deprecation_description="The argument ``opt_a1`` of ``qs_decomposition()``",
     additional_msg="The optimization is now applied automatically when appropriate.",
 )
+@_sc.observe(_sc.check_qsd)
 def qs_decomposition(
     mat: np.ndarray,
     opt_a1: bool | None = None,

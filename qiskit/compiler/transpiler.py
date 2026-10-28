@@ -13,6 +13,7 @@
 
 """Circuit transpile function"""
 
+from qiskit import _scientific_checkers as _sc
 import logging
 import os
 from time import time
@@ -35,6 +36,7 @@ logger = logging.getLogger(__name__)
 _CircuitT = TypeVar("_CircuitT", bound=QuantumCircuit | list[QuantumCircuit])
 
 
+@_sc.observe(_sc.check_transpile)
 def transpile(
     circuits: _CircuitT,
     backend: Backend | None = None,

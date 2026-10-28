@@ -17,6 +17,7 @@ Circuit synthesis for the Clifford class.
 # Synthesis based on Bravyi et al. greedy clifford compiler
 # ---------------------------------------------------------------------
 
+from qiskit import _scientific_checkers as _sc
 from qiskit.circuit import QuantumCircuit
 from qiskit.quantum_info import Clifford
 
@@ -25,6 +26,7 @@ from qiskit._accelerate.synthesis.clifford import (
 )
 
 
+@_sc.observe(_sc.check_clifford_synthesis)
 def synth_clifford_greedy(clifford: Clifford) -> QuantumCircuit:
     """Decompose a :class:`.Clifford` operator into a :class:`.QuantumCircuit` based
     on the greedy Clifford compiler that is described in Appendix A of

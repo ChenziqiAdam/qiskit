@@ -16,6 +16,8 @@ Chi-matrix representation of a Quantum Channel.
 """
 
 from __future__ import annotations
+
+from qiskit import _scientific_checkers as _sc
 import copy as _copy
 import math
 from typing import TYPE_CHECKING
@@ -159,6 +161,7 @@ class Chi(QuantumChannel):
     def adjoint(self):
         return Chi(Choi(self).adjoint())
 
+    @_sc.observe(_sc.check_channel_compose)
     def compose(self, other: Chi, qargs: list | None = None, front: bool = False) -> Chi:
         if qargs is None:
             qargs = getattr(other, "qargs", None)
@@ -168,11 +171,13 @@ class Chi(QuantumChannel):
         # representation conversion to SuperOp and then convert back to Chi
         return Chi(Choi(self).compose(other, front=front))
 
+    @_sc.observe(_sc.check_channel_tensor)
     def tensor(self, other: Chi) -> Chi:
         if not isinstance(other, Chi):
             other = Chi(other)
         return self._tensor(self, other)
 
+    @_sc.observe(_sc.check_channel_expand)
     def expand(self, other: Chi) -> Chi:
         if not isinstance(other, Chi):
             other = Chi(other)

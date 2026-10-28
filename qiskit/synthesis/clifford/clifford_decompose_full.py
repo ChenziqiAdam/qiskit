@@ -14,6 +14,8 @@ Circuit synthesis for the Clifford class for all-to-all architecture.
 """
 
 from __future__ import annotations
+
+from qiskit import _scientific_checkers as _sc
 from qiskit.circuit import QuantumCircuit
 from qiskit.quantum_info import Clifford
 from qiskit.synthesis.clifford.clifford_decompose_ag import synth_clifford_ag
@@ -21,6 +23,7 @@ from qiskit.synthesis.clifford.clifford_decompose_bm import synth_clifford_bm
 from qiskit.synthesis.clifford.clifford_decompose_greedy import synth_clifford_greedy
 
 
+@_sc.observe(_sc.check_clifford_synthesis)
 def synth_clifford_full(clifford: Clifford, method: str | None = None) -> QuantumCircuit:
     r"""Decompose a :class:`.Clifford` operator into a :class:`.QuantumCircuit`.
 

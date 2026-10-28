@@ -15,6 +15,8 @@ N-qubit Pauli Operator Class
 
 from __future__ import annotations
 
+from qiskit import _scientific_checkers as _sc
+
 import re
 from typing import Literal, TYPE_CHECKING
 
@@ -454,6 +456,7 @@ class Pauli(BasePauli):
     # BaseOperator methods
     # ---------------------------------------------------------------------
 
+    @_sc.observe(_sc.check_pauli_compose)
     def compose(
         self, other: Pauli, qargs: list | None = None, front: bool = False, inplace: bool = False
     ) -> Pauli:
@@ -534,6 +537,7 @@ class Pauli(BasePauli):
     # Utility methods
     # ---------------------------------------------------------------------
 
+    @_sc.observe(_sc.check_pauli_commutes)
     def commutes(self, other: Pauli | PauliList, qargs: list | None = None) -> bool:
         """Return True if the Pauli commutes with other.
 

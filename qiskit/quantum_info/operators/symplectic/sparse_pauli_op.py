@@ -14,6 +14,8 @@ N-Qubit Sparse Pauli Operator class.
 """
 
 from __future__ import annotations
+
+from qiskit import _scientific_checkers as _sc
 from typing import Literal, TYPE_CHECKING
 
 from collections.abc import Mapping, Sequence, Iterable
@@ -329,6 +331,7 @@ class SparsePauliOp(LinearOp):
         ret._coeffs *= minus
         return ret
 
+    @_sc.observe(_sc.check_spo_adjoint)
     def adjoint(self):
         # Pauli's are self adjoint, so we only need to
         # conjugate the phases
@@ -336,6 +339,7 @@ class SparsePauliOp(LinearOp):
         ret._coeffs = ret._coeffs.conj()
         return ret
 
+    @_sc.observe(_sc.check_spo_compose)
     def compose(
         self, other: SparsePauliOp, qargs: list | None = None, front: bool = False
     ) -> SparsePauliOp:
@@ -389,6 +393,7 @@ class SparsePauliOp(LinearOp):
         coeffs = np.multiply.outer(self.coeffs, other.coeffs).ravel()
         return SparsePauliOp(pauli_list, coeffs, copy=False)
 
+    @_sc.observe(_sc.check_spo_tensor)
     def tensor(self, other: SparsePauliOp) -> SparsePauliOp:
         if not isinstance(other, SparsePauliOp):
             other = SparsePauliOp(other)
@@ -509,6 +514,7 @@ class SparsePauliOp(LinearOp):
             and not np.any(val.paulis.z)
         )
 
+    @_sc.observe(_sc.check_spo_simplify)
     def simplify(self, atol: float | None = None, rtol: float | None = None) -> SparsePauliOp:
         """Simplify PauliList by combining duplicates and removing zeros.
 

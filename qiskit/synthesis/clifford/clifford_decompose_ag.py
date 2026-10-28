@@ -18,6 +18,7 @@ Circuit synthesis for the Clifford class.
 # Synthesis based on Aaronson & Gottesman decomposition
 # ---------------------------------------------------------------------
 
+from qiskit import _scientific_checkers as _sc
 import numpy as np
 
 from qiskit.circuit import QuantumCircuit
@@ -33,6 +34,7 @@ from qiskit.quantum_info.operators.symplectic.clifford_circuits import (
 from .clifford_decompose_bm import synth_clifford_bm
 
 
+@_sc.observe(_sc.check_clifford_synthesis)
 def synth_clifford_ag(clifford: Clifford) -> QuantumCircuit:
     """Decompose a :class:`.Clifford` operator into a :class:`.QuantumCircuit`
     based on Aaronson-Gottesman method [1].

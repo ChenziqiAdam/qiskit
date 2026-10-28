@@ -23,6 +23,8 @@ Gambetta, J. M. Validating quantum computers using randomized model circuits.
 arXiv:1811.12926 [quant-ph] (2018).
 """
 from __future__ import annotations
+
+from qiskit import _scientific_checkers as _sc
 import io
 import base64
 import warnings
@@ -154,6 +156,7 @@ class TwoQubitWeylDecomposition:
 
     _specializations = two_qubit_decompose.Specialization
 
+    @_sc.observe(_sc.check_weyl)
     def __init__(
         self,
         unitary_matrix: np.ndarray,
@@ -507,6 +510,7 @@ class TwoQubitBasisDecomposer:
         """
         return self._inner_decomposer.decomp3_supercontrolled(target._inner_decomposition)
 
+    @_sc.observe(_sc.check_two_qubit_basis)
     def __call__(
         self,
         unitary: Operator | np.ndarray,

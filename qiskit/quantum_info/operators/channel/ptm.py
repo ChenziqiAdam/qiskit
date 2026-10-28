@@ -16,6 +16,8 @@ Pauli Transfer Matrix (PTM) representation of a Quantum Channel.
 """
 
 from __future__ import annotations
+
+from qiskit import _scientific_checkers as _sc
 import copy as _copy
 import math
 from typing import TYPE_CHECKING
@@ -161,6 +163,7 @@ class PTM(QuantumChannel):
     def adjoint(self):
         return PTM(SuperOp(self).adjoint())
 
+    @_sc.observe(_sc.check_channel_compose)
     def compose(self, other: PTM, qargs: list | None = None, front: bool = False) -> PTM:
         if qargs is None:
             qargs = getattr(other, "qargs", None)
@@ -181,11 +184,13 @@ class PTM(QuantumChannel):
         ret._op_shape = new_shape
         return ret
 
+    @_sc.observe(_sc.check_channel_tensor)
     def tensor(self, other: PTM) -> PTM:
         if not isinstance(other, PTM):
             other = PTM(other)
         return self._tensor(self, other)
 
+    @_sc.observe(_sc.check_channel_expand)
     def expand(self, other: PTM) -> PTM:
         if not isinstance(other, PTM):
             other = PTM(other)

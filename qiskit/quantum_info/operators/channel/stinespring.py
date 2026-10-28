@@ -14,6 +14,8 @@ Stinespring representation of a Quantum Channel.
 """
 
 from __future__ import annotations
+
+from qiskit import _scientific_checkers as _sc
 import copy
 import math
 from numbers import Number
@@ -194,6 +196,7 @@ class Stinespring(QuantumChannel):
         ret._data = (stine[0], stine[1])
         return ret
 
+    @_sc.observe(_sc.check_channel_compose)
     def compose(
         self, other: Stinespring, qargs: list | None = None, front: bool = False
     ) -> Stinespring:
@@ -205,11 +208,13 @@ class Stinespring(QuantumChannel):
         # superoperator to avoid unnecessary representation conversions
         return Stinespring(Kraus(self).compose(other, front=front))
 
+    @_sc.observe(_sc.check_channel_tensor)
     def tensor(self, other: Stinespring) -> Stinespring:
         if not isinstance(other, Stinespring):
             other = Stinespring(other)
         return self._tensor(self, other)
 
+    @_sc.observe(_sc.check_channel_expand)
     def expand(self, other: Stinespring) -> Stinespring:
         if not isinstance(other, Stinespring):
             other = Stinespring(other)

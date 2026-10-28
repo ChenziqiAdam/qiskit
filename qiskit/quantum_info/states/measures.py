@@ -14,6 +14,8 @@ Quantum information measures, metrics, and related functions for states.
 """
 
 from __future__ import annotations
+
+from qiskit import _scientific_checkers as _sc
 import numpy as np
 from qiskit.exceptions import QiskitError
 from qiskit.quantum_info.states.statevector import Statevector
@@ -26,6 +28,7 @@ from qiskit.quantum_info.states.utils import (
 )
 
 
+@_sc.observe(_sc.check_state_fidelity, _sc.check_state_fidelity_monotone)
 def state_fidelity(
     state1: Statevector | DensityMatrix, state2: Statevector | DensityMatrix, validate: bool = True
 ) -> float:
@@ -79,6 +82,7 @@ def state_fidelity(
     return float(np.real(fid))
 
 
+@_sc.observe(_sc.check_purity)
 def purity(state: Statevector | DensityMatrix, validate: bool = True) -> float:
     r"""Calculate the purity of a quantum state.
 
@@ -102,6 +106,7 @@ def purity(state: Statevector | DensityMatrix, validate: bool = True) -> float:
     return state.purity()
 
 
+@_sc.observe(_sc.check_entropy)
 def entropy(state: Statevector | DensityMatrix, base: int = 2) -> float:
     r"""Calculate the von-Neumann entropy of a quantum state.
 
@@ -131,6 +136,7 @@ def entropy(state: Statevector | DensityMatrix, base: int = 2) -> float:
     return shannon_entropy(evals, base=base)
 
 
+@_sc.observe(_sc.check_mutual_information)
 def mutual_information(state: Statevector | DensityMatrix, base: int = 2) -> float:
     r"""Calculate the mutual information of a bipartite state.
 
@@ -162,6 +168,7 @@ def mutual_information(state: Statevector | DensityMatrix, base: int = 2) -> flo
     return entropy(rho_a, base=base) + entropy(rho_b, base=base) - entropy(state, base=base)
 
 
+@_sc.observe(_sc.check_concurrence)
 def concurrence(state: Statevector | DensityMatrix) -> float:
     r"""Calculate the concurrence of a quantum state.
 
@@ -222,6 +229,7 @@ def concurrence(state: Statevector | DensityMatrix) -> float:
     return max(0.0, w[-1] - np.sum(w[0:-1]))
 
 
+@_sc.observe(_sc.check_entanglement_of_formation)
 def entanglement_of_formation(state: Statevector | DensityMatrix) -> float:
     """Calculate the entanglement of formation of quantum state.
 
@@ -257,6 +265,7 @@ def entanglement_of_formation(state: Statevector | DensityMatrix) -> float:
     return shannon_entropy([val, 1 - val])
 
 
+@_sc.observe(_sc.check_negativity)
 def negativity(state, qargs):
     r"""Calculates the negativity
 

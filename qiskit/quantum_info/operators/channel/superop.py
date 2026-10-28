@@ -15,6 +15,8 @@ Superoperator representation of a Quantum Channel."""
 
 from __future__ import annotations
 
+from qiskit import _scientific_checkers as _sc
+
 import copy as _copy
 import math
 from typing import TYPE_CHECKING
@@ -158,11 +160,13 @@ class SuperOp(QuantumChannel):
         ret._op_shape = self._op_shape.transpose()
         return ret
 
+    @_sc.observe(_sc.check_channel_tensor)
     def tensor(self, other: SuperOp) -> SuperOp:
         if not isinstance(other, SuperOp):
             other = SuperOp(other)
         return self._tensor(self, other)
 
+    @_sc.observe(_sc.check_channel_expand)
     def expand(self, other: SuperOp) -> SuperOp:
         if not isinstance(other, SuperOp):
             other = SuperOp(other)
@@ -177,6 +181,7 @@ class SuperOp(QuantumChannel):
         )
         return ret
 
+    @_sc.observe(_sc.check_channel_compose)
     def compose(self, other: SuperOp, qargs: list | None = None, front: bool = False) -> SuperOp:
         if qargs is None:
             qargs = getattr(other, "qargs", None)

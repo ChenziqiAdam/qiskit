@@ -15,6 +15,8 @@ Quantum information utility functions for states.
 """
 
 from __future__ import annotations
+
+from qiskit import _scientific_checkers as _sc
 import math
 
 import numpy as np
@@ -26,6 +28,7 @@ from qiskit.quantum_info.operators.channel import SuperOp
 from qiskit.quantum_info.operators.predicates import ATOL_DEFAULT
 
 
+@_sc.observe(_sc.check_partial_trace)
 def partial_trace(state: Statevector | DensityMatrix, qargs: list) -> DensityMatrix:
     """Return reduced density matrix by tracing out part of quantum state.
 

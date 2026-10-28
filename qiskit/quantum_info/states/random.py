@@ -15,6 +15,8 @@ Random state generation.
 """
 
 from __future__ import annotations
+
+from qiskit import _scientific_checkers as _sc
 from typing import Literal
 
 import numpy as np
@@ -26,6 +28,7 @@ from .statevector import Statevector
 from .densitymatrix import DensityMatrix
 
 
+@_sc.observe(_sc.check_random_statevector)
 def random_statevector(
     dims: int | tuple, seed: int | np.random.Generator | None = None
 ) -> Statevector:
@@ -60,6 +63,7 @@ def random_statevector(
     return Statevector(vec, dims=dims)
 
 
+@_sc.observe(_sc.check_random_density)
 def random_density_matrix(
     dims: int | tuple,
     rank: int | None = None,

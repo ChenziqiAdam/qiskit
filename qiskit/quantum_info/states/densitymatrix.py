@@ -15,6 +15,8 @@ DensityMatrix quantum state class.
 """
 
 from __future__ import annotations
+
+from qiskit import _scientific_checkers as _sc
 import copy as _copy
 from numbers import Number
 from typing import TYPE_CHECKING
@@ -311,6 +313,7 @@ class DensityMatrix(QuantumState, TolerancesMixin):
         ret._data = other * self.data
         return ret
 
+    @_sc.observe(_sc.check_evolve_unitary, _sc.check_evolve_circuit, _sc.check_channel_evolve_state)
     def evolve(
         self,
         other: Operator | QuantumChannel | circuit.instruction.Instruction | QuantumCircuit,
@@ -405,6 +408,7 @@ class DensityMatrix(QuantumState, TolerancesMixin):
             data, self.num_qubits, z_mask, x_mask, y_phase, x_max
         )
 
+    @_sc.observe(_sc.check_expectation_value)
     def expectation_value(self, oper: Operator, qargs: None | list[int] = None) -> complex:
         """Compute the expectation value of an operator.
 
@@ -428,6 +432,7 @@ class DensityMatrix(QuantumState, TolerancesMixin):
             oper = Operator(oper)
         return np.trace(Operator(self).dot(oper, qargs=qargs).data)
 
+    @_sc.observe(_sc.check_probabilities)
     def probabilities(
         self, qargs: None | list[int] = None, decimals: None | int = None
     ) -> np.ndarray:
