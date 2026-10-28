@@ -382,13 +382,21 @@ def _shannon2(p):
     return float(-(p * np.log2(p)).sum())
 
 
+def _concurrence_tol(st):
+    Statevector, _ = _states()
+    # the density-matrix route takes eigenvalues of a non-Hermitian, nearly defective matrix
+    # (almost separable states): eigenvalue error sqrt(eps), then a square root: eps^(1/4)
+    base = _SQRT_EPS if isinstance(st, Statevector) else _EPS ** 0.25
+    return _C * base + 4 * _norm_defect(st)
+
+
 @_guarded
 def check_concurrence(c, a):
     """QK-STM-005."""
     st = _as_state(a["state"])
     if not _usable(st, 4) or st.dim != 4:
         return
-    tol = _C * _SQRT_EPS + 4 * _norm_defect(st)
+    tol = _concurrence_tol(st)
     bad = c < -tol or c > 1 + tol
     vec = _pure_vec(st)
     if vec is not None:
@@ -403,7 +411,7 @@ def check_entanglement_of_formation(e, a):
     st = _as_state(a["state"])
     if not _usable(st, 4) or st.dim != 4:
         return
-    tol = _C * _SQRT_EPS + 4 * _norm_defect(st)
+    tol = _concurrence_tol(st)
     bad = e < -tol or e > 1 + tol
     vec = _pure_vec(st)
     if vec is not None:
@@ -490,6 +498,10 @@ def check_process_fidelity_routes(f, a):
     lam_u = _choi_data(Operator(u))
     f2 = float(np.real(np.trace(lam_e @ lam_u))) / d**2
     tol = _C * _EPS * d**3 + 8 * _unitary_defect(u) * d
+    if tg is not None and not isinstance(tg, Operator):
+        # a channel-typed target takes the state_fidelity route, whose matrix square root
+        # amplifies the rounding-level eigenvalues of the rank-one Choi matrix to sqrt(eps)
+        tol = _C * _SQRT_EPS * d
     trigger_if(abs(f - f2) > tol, "QK-OPM-001")
 
 
@@ -956,7 +968,9 @@ def check_circuit_operator(res, a):
         return
     u = np.asarray(res.data)
     d = u.shape[0]
-    tol = _C * _EPS * d * (1 + qc.size())
+    # gate matrices are built from sin/cos/exp of the raw angles, whose error grows with |angle|
+    ang = sum(abs(float(p)) for i in qc.data for p in i.operation.params if isinstance(p, (int, float)))
+    tol = _C * _EPS * d * (1 + qc.size() + ang)
     bad = _unitary_defect(u) > tol
     inv = Operator.from_circuit(qc.inverse()).data
     bad = bad or float(np.abs(inv - u.conj().T).max()) > tol
@@ -1332,6 +1346,10 @@ def check_transpile(res, a):
         if not isinstance(inp, QuantumCircuit) or not isinstance(out, QuantumCircuit):
             continue
         if inp.num_qubits > 6 or out.num_qubits != inp.num_qubits:
+            continue
+        # Operator/Statevector read PauliEvolutionGate as the exact exponential, transpile
+        # synthesises it with a (possibly randomised) product formula: not an equivalence
+        if any("evolution" in i.operation.name.lower() for i in inp.data):
             continue
         try:
             n_blocks = max(1, sum(1 for i in inp.data if len(i.qubits) >= 2))
